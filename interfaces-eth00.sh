@@ -1,10 +1,23 @@
 #!/bin/bash
 
+# Verifica se o usuário é root (UID 0)
+if [[ $(id -u) -ne 0 ]]; then
+    echo "Este script deve ser executado como root."
+    exit 1
+fi
+
+# Verifica se o primeiro argumento foi fornecido
+if [[ -z "$1" ]]; then
+    echo "Erro: O argumento 'rota' é obrigatório..."
+    echo "Indique o IP da rota que será usado!"
+    exit 1
+fi
+
 # Arquivo interfaces
 interface_file="/etc/network/interfaces"
 
 # Rota padrão da loja
-rota="192.168.1.201"
+rota="$1" # "192.168.1.201"
 
 # Obtém o comprimento total da string
 comprimento=${#rota}
