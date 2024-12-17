@@ -19,6 +19,9 @@ interface_file="/etc/network/interfaces"
 # Rota padrão da loja
 rota="$1" # "192.168.1.201"
 
+# Destino de rede
+destino="172.19.0.0/16"
+
 # Obtém o comprimento total da string
 comprimento=${#rota}
 
@@ -68,8 +71,8 @@ address "$nova_rota.$oct4"
 netmask "$mask"
 
 # Rota para TEF
-post-up ip route add 172.19.0.0/16 via "$rota"
+post-up ip route add "$destino" via "$rota"
 
 " | sudo tee -a "$interface_file"
-   sudo systemctl restart networking
+  sudo systemctl restart networking
 fi
