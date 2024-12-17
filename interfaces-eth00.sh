@@ -1,45 +1,62 @@
 #!/bin/bash
 
-# Configurações padrão
-INTERFACE_FILE="/etc/network/interfaces"
-INTERFACE_TO_ADD="eth0:0"
-LINE_TO_CHECK="auto lo eth0"
+# Arquivo interfaces
+interface_file="/etc/network/interfaces"
 
-# Função para configurar a interface eth0:0
-configure_interface() {
-    local nova_rota="$(ifconfig eth0 | grep 'inet ' | awk '{print $2}' | cut -d. -f-3)"
-    local oct4="$(ifconfig eth0 | grep 'inet ' | awk '{print $2}' | cut -d '.' -f '4')"
-    local mask="$(ifconfig eth0 | grep 'inet ' | awk '{print $4}')"
-    local rota="192.168.1.201"
+# Rota padrão da loja
+rota="192.168.1.201"
 
-    # Verifica se o arquivo interfaces existe e é writable
-    if [[ ! -f "$INTERFACE_FILE" || ! -w "$INTERFACE_FILE" ]]; then
-        echo "Erro: Arquivo $INTERFACE_FILE não encontrado ou não tem permissão de escrita."
-        exit 1
-    fi
+# Obtém o comprimento total da string
+comprimento=${#rota}
 
-    # Adiciona a configuração da interface
-    echo -e "\n
-# Interface para rota TEF
-iface $INTERFACE_TO_ADD inet static
-address "$nova_rota.$oct4"
-netmask "$mask"
+# Extrai todos os caracteres até o terceiro ponto (excluindo o último octeto)
+nova_rota=$(echo "$rota" | cut -d. -f-3)
 
-# Rota para TEF
-post-up ip route add 172.19.0.0/16 via "$rota"
+# Último octeto do endereço IP da Interface eth0
+oct4="$(ifconfig eth0 | grep 'inet ' | awk '{print $2}' | cut -d '.' -f '4')"
 
-" | sudo tee -a "$INTERFACE_FILE"
+# Máscara da Interface eth0
+mask="$(ifconfig eth0 | grep 'inet ' | awk '{print $4}')"
 
-    # Reinicia o serviço de rede
-    sudo systemctl restart networking
+# echo "$nova_rota.$oct4"
+# echo "$mask"
+
+# 1ª Linha a ser verificada e modificada
+line_to_check="auto lo eth0"
+interface_to_add="eth0:0"
+
+# Interface secundario
+eth0_0="iface $interface_to_add inet static"
+
+# Função para encontrar e modificar a linha
+function modify_line() {
+    sed -i "s/$line_to_check/$line_to_check $interface_to_add/g" "$interface_file"
 }
 
 # Verifica se a linha já existe e contém a interface a ser adicionada
 if grep -q "$line_to_check.*$interface_to_add" "$interface_file"; then
     echo "A interface $interface_to_add já existe."
 else
-    # Modifica a linha e configura a interface
-    sed -i "s/$line_to_check/$line_to_check $interface_to_add/g" "$interface_file"
-    configure_interface
-    echo "A interface $interface_to_add foi adicionada e configurada."
+    # Se não existir, chama a função para modificar a linha
+    modify_line
+    echo "A interface $interface_to_add foi adicionada."
+fi
+
+# Comando para verificar se a linha existe
+if grep -Fxq "$eth0_0" "$interface_file"; then
+  echo "A linha '$eth0_0' foi encontrada no interface_file $interface_file."
+else
+  echo "A linha '$eth0_0' não foi encontrada. Executando configuração..."
+  echo "Configurando a interface eth0:0 para modo estático..."
+echo -e "\n
+# Interface para rota TEF
+iface eth0:0 inet static
+address "$nova_rota.$oct4"
+netmask "$mask"
+
+# Rota para TEF
+post-up ip route add 172.19.0.0/16 via "$rota"
+
+" | sudo tee -a "$interface_file"
+   sudo systemctl restart networking
 fi
