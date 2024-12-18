@@ -88,6 +88,7 @@ adicionar_configuracao() {
 
     local rota_tef="post-up ip route add $destino via $rota"
     local bloco_configuracao="
+# Interface para rota TEF
 iface $interface_eth00 inet static
 address $nova_rota.$oct4
 netmask $mask
