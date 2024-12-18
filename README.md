@@ -1,7 +1,7 @@
 # intarfaces-eth00
 
-Este script Bash automatiza a adição e configuração da interface de rede secundária `eth0:0` em sistemas Ubuntu 16.04.   
-Ele é útil para adicionar uma interface adicional para uma rede específica, como uma rede de gerenciamento ou uma rede de armazenamento.
+Este script Bash automatiza a adição e configuração da interface de rede secundária `eth0:0` e uma rota adicional especificada em sistemas Ubuntu 16.04.   
+Ele é útil para adicionar uma interface adicional para uma rede específica, como uma rede de gerenciamento ou uma rede de armazenamento.  
 
 ## Instalação
 
@@ -14,13 +14,13 @@ Ele é útil para adicionar uma interface adicional para uma rede específica, c
 
 1. **Execute o script:**
    ```bash
-   ./interfaces-eth00.sh
+   ./interfaces-eth00.sh {IP_ROTA}
    ```
    O script irá modificar o arquivo `/etc/network/interfaces` e reiniciar o serviço de rede para aplicar as alterações.
 
 ## Configuração
 
-* **Rota padrão da loja:** A variável `rota` no início do script define a rota padrão para a nova interface. Você pode modificar esse valor para se adequar à sua rede.
+* **Rota padrão da loja:** A variável `rota` no início do script define a rota padrão para a nova interface.  
 * **Arquivo interfaces:** O script modifica o arquivo `/etc/network/interfaces`. Certifique-se de ter permissões de escrita nesse arquivo.
 
 ## Limitações
